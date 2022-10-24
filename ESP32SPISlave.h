@@ -80,11 +80,11 @@ public:
     }
 
     // wait for transaction one by one
-    bool wait(uint8_t* rx_buf, const size_t size) {
-        return wait(rx_buf, NULL, size);
+    bool wait(uint8_t* rx_buf, const size_t size, TickType_t tick_to_wait = portMAX_DELAY) {
+        return wait(rx_buf, NULL, size, tick_to_wait);
     }
 
-    bool wait(uint8_t* rx_buf, const uint8_t* tx_buf, const size_t size) {
+    bool wait(uint8_t* rx_buf, const uint8_t* tx_buf, const size_t size, TickType_t tick_to_wait = portMAX_DELAY) {
         if (!transactions.empty()) {
             printf(
                 "[WARN] cannot execute transfer if queued transaction exists. queued transactions = %d\n",
@@ -94,7 +94,7 @@ public:
 
         addTransaction(rx_buf, tx_buf, size);
 
-        esp_err_t e = spi_slave_transmit(host, &transactions.back(), portMAX_DELAY);
+        esp_err_t e = spi_slave_transmit(host, &transactions.back(), tick_to_wait);
         if (e != ESP_OK) {
             printf("[ERROR] SPI device transmit failed : %d\n", e);
             transactions.pop_back();
